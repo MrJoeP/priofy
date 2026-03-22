@@ -1,0 +1,2340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Priofy — Only what matters.</title>
+<meta name="description" content="AI-powered notification filtering. Smart, private, free.">
+<meta name="theme-color" content="#050D1A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Priofy">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23050D1A'/%3E%3Ctext x='90' y='125' text-anchor='middle' font-size='96' font-weight='900' fill='%2338BDF8'%3EP%3C/text%3E%3C/svg%3E">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #050D1A;
+    --card: #0D1F3C;
+    --card2: #0F2749;
+    --blue: #2563EB;
+    --blue-light: #3B82F6;
+    --cyan: #38BDF8;
+    --cyan-glow: rgba(56,189,248,0.25);
+    --silver: #94A3B8;
+    --silver-light: #CBD5E1;
+    --green: #10B981;
+    --orange: #F59E0B;
+    --red: #EF4444;
+    --text: #F1F5F9;
+    --text2: #94A3B8;
+    --border: rgba(148,163,184,0.15);
+    --gradient: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
+  }
+
+  body {
+    background: #030A14;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+  }
+
+  /* PHONE FRAME */
+  .phone-wrap {
+    position: relative;
+    width: 390px;
+    height: 844px;
+  }
+
+  .phone-frame {
+    position: absolute;
+    inset: -14px -14px -14px -14px;
+    border-radius: 56px;
+    background: linear-gradient(145deg, #e8e8e8 0%, #a8a8a8 30%, #d4d4d4 50%, #8a8a8a 70%, #c8c8c8 100%);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.3) inset,
+      0 30px 80px rgba(0,0,0,0.8),
+      0 0 60px rgba(37,99,235,0.15);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .phone-frame::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 48px;
+    background: #050D1A;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.8) inset;
+  }
+
+  /* Notch */
+  .phone-notch {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 126px;
+    height: 37px;
+    background: #030A14;
+    border-radius: 0 0 22px 22px;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  /* Side buttons */
+  .phone-btn-vol {
+    position: absolute;
+    left: -17px;
+    top: 140px;
+    width: 4px;
+    height: 34px;
+    background: linear-gradient(to right, #aaa, #ccc, #aaa);
+    border-radius: 2px 0 0 2px;
+    pointer-events: none;
+  }
+  .phone-btn-vol2 {
+    position: absolute;
+    left: -17px;
+    top: 188px;
+    width: 4px;
+    height: 34px;
+    background: linear-gradient(to right, #aaa, #ccc, #aaa);
+    border-radius: 2px 0 0 2px;
+    pointer-events: none;
+  }
+  .phone-btn-power {
+    position: absolute;
+    right: -17px;
+    top: 170px;
+    width: 4px;
+    height: 64px;
+    background: linear-gradient(to left, #aaa, #ccc, #aaa);
+    border-radius: 0 2px 2px 0;
+    pointer-events: none;
+  }
+
+  /* SCREEN CONTAINER */
+  .screen-container {
+    position: relative;
+    width: 390px;
+    height: 844px;
+    border-radius: 42px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  /* SCREENS */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .screen.active { display: flex; }
+
+  /* ========== SPLASH SCREEN ========== */
+  #screen-splash {
+    background: radial-gradient(ellipse at 50% 40%, #0D2A5E 0%, #050D1A 70%);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .splash-logo-wrap {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin-bottom: 28px;
+    animation: logoFadeIn 0.8s ease forwards;
+  }
+
+  .splash-logo-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d0d0d0 0%, #f8f8f8 30%, #b8b8b8 60%, #e8e8e8 100%);
+    padding: 6px;
+    box-shadow: 0 0 40px rgba(37,99,235,0.5), 0 0 80px rgba(37,99,235,0.2);
+  }
+
+  .splash-logo-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 40% 35%, #1a4db5 0%, #0a1f5e 40%, #050e2a 100%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .splash-logo-inner::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(56,189,248,0.5);
+    box-shadow: 0 0 20px rgba(56,189,248,0.3) inset;
+  }
+
+  .splash-logo-inner::after {
+    content: '';
+    position: absolute;
+    inset: 18px;
+    border-radius: 50%;
+    border: 1px solid rgba(56,189,248,0.25);
+  }
+
+  .splash-p {
+    color: var(--cyan);
+    font-size: 42px;
+    font-weight: 800;
+    z-index: 2;
+    text-shadow: 0 0 20px var(--cyan);
+    letter-spacing: -1px;
+  }
+
+  /* Grid overlay on logo */
+  .grid-lines {
+    position: absolute;
+    inset: 0;
+    opacity: 0.2;
+    background-image:
+      linear-gradient(rgba(56,189,248,0.6) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56,189,248,0.6) 1px, transparent 1px);
+    background-size: 14px 14px;
+    border-radius: 50%;
+  }
+
+  .splash-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -1px;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .splash-title span { color: var(--cyan); }
+
+  .splash-sub {
+    font-size: 16px;
+    color: var(--text2);
+    margin-top: 10px;
+    text-align: center;
+    line-height: 1.5;
+    padding: 0 40px;
+    animation: fadeUp 0.6s 0.5s ease both;
+  }
+
+  .splash-dots {
+    display: flex;
+    gap: 8px;
+    margin-top: 60px;
+    animation: fadeUp 0.6s 0.7s ease both;
+  }
+  .splash-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .splash-dot.active {
+    width: 24px;
+    border-radius: 4px;
+    background: var(--cyan);
+  }
+
+  .splash-btn {
+    margin-top: 40px;
+    background: var(--gradient);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 16px 48px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(37,99,235,0.5);
+    transition: transform 0.15s, box-shadow 0.15s;
+    animation: fadeUp 0.6s 0.8s ease both;
+  }
+  .splash-btn:active { transform: scale(0.96); }
+
+  /* ========== ONBOARDING ========== */
+  #screen-onboard {
+    background: var(--bg);
+    padding: 60px 28px 40px;
+    justify-content: space-between;
+  }
+
+  .onboard-step {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+  }
+  .onboard-step.active { display: flex; }
+
+  .onboard-illus {
+    width: 100%;
+    height: 220px;
+    border-radius: 24px;
+    background: var(--card);
+    margin: 32px 0;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+  }
+
+  .notif-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+  }
+
+  .notif-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 8px 12px;
+    transition: all 0.3s;
+  }
+
+  .notif-mini.blocked {
+    opacity: 0.3;
+    text-decoration: line-through;
+    transform: translateX(20px);
+    color: var(--red);
+  }
+
+  .notif-mini-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .notif-mini-text { flex: 1; }
+  .notif-mini-app { font-size: 10px; color: var(--text2); }
+  .notif-mini-msg { font-size: 12px; color: var(--text); font-weight: 500; }
+
+  .ai-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .ai-badge.pass { background: rgba(16,185,129,0.2); color: var(--green); }
+  .ai-badge.block { background: rgba(239,68,68,0.2); color: var(--red); }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .contact-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .contact-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .contact-avatar.selected {
+    border-color: var(--cyan);
+    box-shadow: 0 0 12px rgba(56,189,248,0.4);
+  }
+
+  .contact-avatar.selected::after {
+    content: '✓';
+    position: absolute;
+    bottom: -2px; right: -2px;
+    width: 18px; height: 18px;
+    background: var(--cyan);
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #000;
+    font-weight: 700;
+  }
+
+  .contact-name { font-size: 11px; color: var(--text2); }
+
+  .onboard-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+  }
+
+  .onboard-sub {
+    font-size: 15px;
+    color: var(--text2);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  .onboard-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 20px;
+  }
+
+  /* ========== BOTTOM NAV ========== */
+  .bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0; right: 0;
+    height: 82px;
+    background: rgba(13,31,60,0.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    padding-top: 10px;
+    padding-bottom: 16px;
+    z-index: 100;
+  }
+
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: all 0.2s;
+  }
+
+  .nav-icon {
+    font-size: 22px;
+    transition: transform 0.2s;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text2);
+    transition: color 0.2s;
+  }
+
+  .nav-item.active .nav-label { color: var(--cyan); }
+  .nav-item.active .nav-icon { transform: scale(1.1); }
+  .nav-item:active .nav-icon { transform: scale(0.9); }
+
+  /* Nav dot indicator */
+  .nav-dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: transparent;
+    margin-top: -2px;
+    transition: background 0.2s;
+  }
+  .nav-item.active .nav-dot { background: var(--cyan); }
+
+  /* ========== HOME SCREEN ========== */
+  #screen-home {
+    padding-bottom: 82px;
+    overflow-y: auto;
+  }
+
+  .home-header {
+    padding: 56px 24px 20px;
+    background: linear-gradient(180deg, #0D2A5E 0%, var(--bg) 100%);
+  }
+
+  .home-greeting {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .home-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    margin-top: 2px;
+  }
+
+  .home-date {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 2px;
+  }
+
+  /* Big stat card */
+  .stat-hero {
+    margin: 20px 24px 0;
+    background: var(--gradient);
+    border-radius: 24px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(37,99,235,0.4);
+  }
+
+  .stat-hero::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .stat-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -50px; right: 40px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .stat-hero-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stat-hero-num {
+    font-size: 56px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin: 8px 0 4px;
+  }
+
+  .stat-hero-sub {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .stat-hero-icon {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 56px;
+    opacity: 0.3;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin: 12px 24px 0;
+  }
+
+  .stat-mini {
+    flex: 1;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+  }
+
+  .stat-mini-num {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .stat-mini-num.green { color: var(--green); }
+  .stat-mini-num.cyan { color: var(--cyan); }
+
+  .stat-mini-label {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 4px;
+  }
+
+  /* Focus ring */
+  .focus-ring-card {
+    margin: 12px 24px 0;
+    background: var(--card);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .ring-wrap {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+
+  .ring-svg { transform: rotate(-90deg); }
+
+  .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ring-pct {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .ring-lbl { font-size: 9px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; }
+
+  .ring-info-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .ring-info-sub { font-size: 13px; color: var(--text2); margin-top: 4px; line-height: 1.4; }
+
+  /* Focus CTA button */
+  .focus-cta {
+    margin: 16px 24px 0;
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    border: none;
+    border-radius: 18px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    width: calc(100% - 48px);
+    box-shadow: 0 6px 24px rgba(16,185,129,0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .focus-cta:active { transform: scale(0.98); box-shadow: none; }
+
+  .focus-cta-text { font-size: 17px; font-weight: 700; color: white; text-align: left; }
+  .focus-cta-sub { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 2px; }
+  .focus-cta-arrow { font-size: 28px; color: white; opacity: 0.8; }
+
+  /* Section header */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 12px;
+  }
+
+  .section-title { font-size: 17px; font-weight: 700; color: var(--text); }
+  .section-link { font-size: 14px; color: var(--cyan); font-weight: 600; cursor: pointer; }
+
+  /* Notification card */
+  .notif-card {
+    margin: 0 24px 10px;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .notif-card:active { background: var(--card2); }
+
+  .notif-app-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .notif-content { flex: 1; min-width: 0; }
+  .notif-row1 { display: flex; align-items: center; justify-content: space-between; }
+  .notif-app-name { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .notif-time { font-size: 11px; color: var(--text2); }
+  .notif-sender { font-size: 14px; font-weight: 700; color: var(--text); margin-top: 2px; }
+  .notif-preview { font-size: 13px; color: var(--text2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .ai-score {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+    display: inline-block;
+  }
+  .ai-score.high { background: rgba(16,185,129,0.2); color: var(--green); }
+  .ai-score.med { background: rgba(245,158,11,0.2); color: var(--orange); }
+
+  /* ========== INBOX SCREEN ========== */
+  #screen-inbox { padding-bottom: 82px; }
+
+  .inbox-header {
+    padding: 56px 24px 0;
+    background: linear-gradient(180deg, #0D2A5E 0%, var(--bg) 100%);
+  }
+
+  .inbox-title { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    margin-top: 20px;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 4px;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: var(--blue);
+    color: white;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.4);
+  }
+
+  .inbox-body { overflow-y: auto; height: calc(844px - 82px - 170px); padding-top: 12px; }
+
+  .blocked-item {
+    margin: 0 24px 8px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .blocked-item:active { background: var(--card2); }
+
+  .blocked-item.blocked-state { opacity: 0.6; }
+
+  .blocked-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--red);
+    border-radius: 2px;
+  }
+  .blocked-item.pass-state::before { background: var(--green); }
+
+  .blocked-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .blocked-content { flex: 1; min-width: 0; }
+  .blocked-app { font-size: 11px; color: var(--text2); }
+  .blocked-msg { font-size: 13px; color: var(--text); font-weight: 600; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .blocked-reason { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .blocked-tag { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; }
+  .blocked-tag.spam { background: rgba(239,68,68,0.2); color: var(--red); }
+  .blocked-tag.promo { background: rgba(245,158,11,0.2); color: var(--orange); }
+  .blocked-tag.social { background: rgba(148,163,184,0.2); color: var(--silver); }
+
+  /* Teach AI button */
+  .teach-btn {
+    background: rgba(37,99,235,0.15);
+    border: 1px solid rgba(37,99,235,0.3);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--cyan);
+    cursor: pointer;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .teach-btn:active { background: rgba(37,99,235,0.3); }
+
+  /* ========== FOCUS SCREEN ========== */
+  #screen-focus {
+    padding-bottom: 82px;
+    background: radial-gradient(ellipse at 50% 30%, #0D2A5E 0%, var(--bg) 60%);
+  }
+
+  .focus-top {
+    padding: 56px 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .focus-screen-title { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+
+  .focus-status-badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(16,185,129,0.2);
+    color: var(--green);
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+
+  .focus-timer-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px;
+  }
+
+  .focus-circle {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    cursor: pointer;
+  }
+
+  .focus-circle-svg { transform: rotate(-90deg); }
+
+  .focus-circle-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .focus-time {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: -2px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .focus-time-label { font-size: 13px; color: var(--text2); font-weight: 500; }
+
+  .focus-session-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--cyan);
+    margin-top: 16px;
+  }
+
+  .focus-session-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+
+  .focus-stats-row {
+    display: flex;
+    gap: 12px;
+    padding: 0 24px;
+    width: 100%;
+  }
+
+  .focus-stat {
+    flex: 1;
+    background: var(--card);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .focus-stat-num { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+  .focus-stat-num.red { color: var(--red); }
+  .focus-stat-num.green { color: var(--green); }
+  .focus-stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  .focus-important {
+    margin: 16px 24px 0;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.25);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .focus-important-icon { font-size: 22px; }
+  .focus-important-text { font-size: 13px; color: var(--green); font-weight: 500; line-height: 1.4; }
+
+  .focus-btn-row {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px 0;
+  }
+
+  .focus-pause-btn {
+    flex: 1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+  }
+  .focus-pause-btn:active { background: var(--card2); }
+
+  .focus-end-btn {
+    flex: 1;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--red);
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+  }
+  .focus-end-btn:active { background: rgba(239,68,68,0.25); }
+
+  /* Focus session picker */
+  .session-picker {
+    padding: 0 24px;
+    overflow-x: auto;
+    display: flex;
+    gap: 10px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .session-picker::-webkit-scrollbar { display: none; }
+
+  .session-chip {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    border-radius: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .session-chip.selected {
+    background: rgba(37,99,235,0.2);
+    border-color: var(--blue);
+    color: var(--cyan);
+  }
+
+  /* ========== LEAGUE SCREEN ========== */
+  #screen-league { padding-bottom: 82px; overflow-y: auto; }
+
+  .league-header {
+    padding: 56px 24px 20px;
+    background: linear-gradient(180deg, #1A0A3E 0%, var(--bg) 100%);
+  }
+
+  .league-title { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+  .league-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+
+  .league-hero {
+    margin: 0 24px 16px;
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+    border-radius: 24px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(79,70,229,0.4);
+  }
+
+  .league-hero::before {
+    content: '🏆';
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 64px;
+    opacity: 0.2;
+  }
+
+  .league-hero-title { font-size: 14px; color: rgba(255,255,255,0.7); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .league-hero-num { font-size: 48px; font-weight: 900; color: white; letter-spacing: -2px; line-height: 1; margin: 6px 0 4px; }
+  .league-hero-sub { font-size: 14px; color: rgba(255,255,255,0.7); }
+
+  .league-your-rank {
+    margin: 0 24px 16px;
+    background: rgba(79,70,229,0.15);
+    border: 1px solid rgba(79,70,229,0.3);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .league-rank-left { display: flex; align-items: center; gap: 10px; }
+  .league-rank-medal { font-size: 24px; }
+  .league-rank-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .league-rank-sub { font-size: 12px; color: var(--text2); }
+  .league-rank-pts { font-size: 20px; font-weight: 800; color: #A78BFA; }
+
+  .leaderboard-item {
+    margin: 0 24px 8px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .leaderboard-item.you {
+    border-color: rgba(79,70,229,0.5);
+    background: rgba(79,70,229,0.1);
+  }
+
+  .lb-rank { font-size: 16px; font-weight: 800; color: var(--text2); width: 24px; text-align: center; }
+  .lb-rank.gold { color: #F59E0B; }
+  .lb-rank.silver { color: #94A3B8; }
+  .lb-rank.bronze { color: #B45309; }
+
+  .lb-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .lb-info { flex: 1; }
+  .lb-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .lb-detail { font-size: 12px; color: var(--text2); }
+
+  .lb-score-wrap { text-align: right; }
+  .lb-score { font-size: 18px; font-weight: 800; color: var(--text); }
+  .lb-score-label { font-size: 10px; color: var(--text2); }
+
+  .lb-bar-wrap { margin-top: 4px; width: 60px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .lb-bar { height: 100%; border-radius: 2px; background: var(--gradient); }
+
+  .league-badge {
+    margin: 0 24px 20px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .badge-card {
+    flex: 1;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .badge-card.earned { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); }
+  .badge-card.locked { opacity: 0.5; }
+
+  .badge-icon { font-size: 28px; margin-bottom: 6px; }
+  .badge-title { font-size: 11px; font-weight: 700; color: var(--text); }
+  .badge-sub { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+  .earned-star {
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 20px; height: 20px;
+    background: var(--orange);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+
+  /* ========== AI SCREEN ========== */
+  #screen-ai { padding-bottom: 82px; overflow-y: auto; }
+
+  .ai-header {
+    padding: 56px 24px 20px;
+    background: linear-gradient(180deg, #0A2040 0%, var(--bg) 100%);
+  }
+
+  .ai-header-title { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+  .ai-header-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+
+  .ai-accuracy-card {
+    margin: 0 24px 16px;
+    background: var(--card);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .ai-gauge {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+  }
+
+  .ai-gauge-svg { transform: rotate(-90deg); }
+
+  .ai-gauge-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-gauge-pct { font-size: 22px; font-weight: 900; color: var(--green); }
+  .ai-gauge-lbl { font-size: 9px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.3px; }
+
+  .ai-gauge-info-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .ai-gauge-info-sub { font-size: 13px; color: var(--text2); margin-top: 4px; line-height: 1.5; }
+
+  .ai-progress-bar {
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+  .ai-progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green), var(--cyan)); }
+
+  .ai-section-title { font-size: 16px; font-weight: 700; color: var(--text); padding: 4px 24px 12px; }
+
+  .priority-contact {
+    margin: 0 24px 8px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .priority-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid var(--border); }
+  .priority-info { flex: 1; }
+  .priority-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .priority-detail { font-size: 12px; color: var(--text2); }
+
+  .priority-level {
+    display: flex;
+    gap: 3px;
+  }
+  .priority-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+  .priority-dot.filled { background: var(--cyan); }
+
+  .keyword-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(37,99,235,0.15);
+    border: 1px solid rgba(37,99,235,0.3);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cyan);
+    margin: 0 6px 8px 0;
+  }
+
+  .keywords-wrap { padding: 0 24px; }
+
+  .add-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    margin: 0 6px 8px 0;
+    cursor: pointer;
+  }
+
+  .ai-learn-card {
+    margin: 16px 24px 0;
+    background: rgba(56,189,248,0.08);
+    border: 1px solid rgba(56,189,248,0.2);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .ai-learn-icon { font-size: 24px; flex-shrink: 0; }
+  .ai-learn-title { font-size: 14px; font-weight: 700; color: var(--cyan); }
+  .ai-learn-sub { font-size: 13px; color: var(--text2); margin-top: 4px; line-height: 1.4; }
+
+  /* ========== FOCUS ACTIVE SCREEN ========== */
+  #screen-focus-active {
+    background: radial-gradient(ellipse at 50% 20%, #0D3320 0%, #050D1A 70%);
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px 120px;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .focus-active-header {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 52px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .focus-active-title { font-size: 17px; font-weight: 700; color: var(--text); }
+
+  .focus-active-x {
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text2);
+    transition: background 0.15s;
+  }
+  .focus-active-x:active { background: rgba(255,255,255,0.2); }
+
+  .focus-big-timer {
+    font-size: 80px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -4px;
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 8px;
+    text-shadow: 0 0 40px rgba(16,185,129,0.4);
+  }
+
+  .focus-big-label { font-size: 16px; color: rgba(255,255,255,0.5); margin-bottom: 32px; }
+
+  .focus-blocked-big {
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--green);
+    letter-spacing: -3px;
+    text-shadow: 0 0 40px rgba(16,185,129,0.5);
+  }
+
+  .focus-blocked-label { font-size: 14px; color: var(--green); opacity: 0.7; }
+
+  .focus-pulse-ring {
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    border: 1px solid rgba(16,185,129,0.15);
+    animation: pulse 3s ease-in-out infinite;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .focus-pulse-ring:nth-child(2) { width: 400px; height: 400px; animation-delay: 1s; }
+  .focus-pulse-ring:nth-child(3) { width: 500px; height: 500px; animation-delay: 2s; }
+
+  /* ========== SHARED COMPONENTS ========== */
+  .btn-primary {
+    background: var(--gradient);
+    border: none;
+    border-radius: 14px;
+    padding: 14px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 6px 24px rgba(37,99,235,0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-primary:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(37,99,235,0.3); }
+
+  .btn-ghost {
+    background: transparent;
+    border: none;
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: color 0.15s;
+  }
+  .btn-ghost:active { color: var(--text); }
+
+  /* ========== TOAST ========== */
+  .toast {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(16,185,129,0.95);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ========== NOTIFICATION BADGE ========== */
+  .nav-badge {
+    position: absolute;
+    top: 2px;
+    right: calc(50% - 18px);
+    background: var(--red);
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ========== ANIMATIONS ========== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes logoFadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+    50% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.2; }
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes countUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .screen-enter { animation: slideIn 0.3s ease both; }
+
+  /* Status bar */
+  .status-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 0 28px 8px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  .status-time { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons span { font-size: 13px; color: var(--text); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 0; }
+</style>
+</head>
+<body>
+
+<div class="phone-wrap">
+  <!-- Phone chrome -->
+  <div class="phone-frame"></div>
+  <div class="phone-notch"></div>
+  <div class="phone-btn-vol"></div>
+  <div class="phone-btn-vol2"></div>
+  <div class="phone-btn-power"></div>
+
+  <!-- Screen container -->
+  <div class="screen-container">
+
+    <!-- Status bar (always visible) -->
+    <div class="status-bar" id="status-bar">
+      <span class="status-time" id="status-time">9:41</span>
+      <div class="status-icons">
+        <span>▲</span>
+        <span>WiFi</span>
+        <span>🔋</span>
+      </div>
+    </div>
+
+    <!-- ============ SPLASH ============ -->
+    <div class="screen active" id="screen-splash">
+      <div class="splash-logo-wrap">
+        <div class="splash-logo-ring">
+          <div class="splash-logo-inner">
+            <div class="grid-lines"></div>
+            <span class="splash-p">P</span>
+          </div>
+        </div>
+      </div>
+      <div class="splash-title">Priof<span>y</span></div>
+      <div class="splash-sub">Your AI-powered notification guardian. Stay focused on what matters.</div>
+      <div class="splash-dots">
+        <div class="splash-dot active"></div>
+        <div class="splash-dot"></div>
+        <div class="splash-dot"></div>
+      </div>
+      <button class="splash-btn" onclick="goTo('screen-onboard')">Get Started →</button>
+    </div>
+
+    <!-- ============ ONBOARDING ============ -->
+    <div class="screen" id="screen-onboard">
+      <!-- Step 1: Problem -->
+      <div class="onboard-step active" id="onboard-1">
+        <div style="padding: 60px 28px 0;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--cyan); letter-spacing: 1px; text-transform: uppercase;">STEP 1 OF 3</div>
+          <div class="onboard-title" style="margin-top: 10px;">Your phone interrupts you<br><span style="color:var(--cyan)">300+ times a day.</span></div>
+          <div class="onboard-sub">Most notifications are irrelevant noise. Priofy's AI learns what actually matters to you.</div>
+        </div>
+
+        <div class="onboard-illus">
+          <div class="notif-stream">
+            <div class="notif-mini">
+              <div class="notif-mini-icon" style="background: rgba(37,99,235,0.2);">💬</div>
+              <div class="notif-mini-text">
+                <div class="notif-mini-app">WhatsApp</div>
+                <div class="notif-mini-msg">"Hey, are you free tonight?"</div>
+              </div>
+              <span class="ai-badge pass">✓ PASS</span>
+            </div>
+            <div class="notif-mini blocked">
+              <div class="notif-mini-icon" style="background: rgba(239,68,68,0.2);">🛒</div>
+              <div class="notif-mini-text">
+                <div class="notif-mini-app">Amazon</div>
+                <div class="notif-mini-msg">Flash sale! 40% off everything</div>
+              </div>
+              <span class="ai-badge block">✗ BLOCK</span>
+            </div>
+            <div class="notif-mini blocked">
+              <div class="notif-mini-icon" style="background: rgba(239,68,68,0.2);">📱</div>
+              <div class="notif-mini-text">
+                <div class="notif-mini-app">Instagram</div>
+                <div class="notif-mini-msg">@user3849 liked your photo</div>
+              </div>
+              <span class="ai-badge block">✗ BLOCK</span>
+            </div>
+            <div class="notif-mini">
+              <div class="notif-mini-icon" style="background: rgba(16,185,129,0.2);">📅</div>
+              <div class="notif-mini-text">
+                <div class="notif-mini-app">Calendar</div>
+                <div class="notif-mini-msg">Team meeting in 15 minutes</div>
+              </div>
+              <span class="ai-badge pass">✓ PASS</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="onboard-nav" style="padding: 0 28px 40px;">
+          <button class="btn-ghost" onclick="goTo('screen-splash')">Back</button>
+          <button class="btn-primary" style="width: auto; padding: 14px 32px;" onclick="nextOnboard(2)">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Priority contacts -->
+      <div class="onboard-step" id="onboard-2">
+        <div style="padding: 60px 28px 0;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--cyan); letter-spacing: 1px; text-transform: uppercase;">STEP 2 OF 3</div>
+          <div class="onboard-title" style="margin-top: 10px;">Who always gets<br><span style="color:var(--cyan)">through to you?</span></div>
+          <div class="onboard-sub">Select your most important contacts. Their messages will never be filtered.</div>
+        </div>
+
+        <div class="onboard-illus">
+          <div class="contact-grid">
+            <div class="contact-chip" onclick="toggleContact(this)">
+              <div class="contact-avatar selected" style="background: rgba(239,68,68,0.2);">👩</div>
+              <div class="contact-name">Mom</div>
+            </div>
+            <div class="contact-chip" onclick="toggleContact(this)">
+              <div class="contact-avatar" style="background: rgba(37,99,235,0.2);">👨</div>
+              <div class="contact-name">Dad</div>
+            </div>
+            <div class="contact-chip" onclick="toggleContact(this)">
+              <div class="contact-avatar selected" style="background: rgba(16,185,129,0.2);">💑</div>
+              <div class="contact-name">Partner</div>
+            </div>
+            <div class="contact-chip" onclick="toggleContact(this)">
+              <div class="contact-avatar" style="background: rgba(245,158,11,0.2);">👔</div>
+              <div class="contact-name">Boss</div>
+            </div>
+            <div class="contact-chip" onclick="toggleContact(this)">
+              <div class="contact-avatar" style="background: rgba(168,85,247,0.2);">👫</div>
+              <div class="contact-name">Best friend</div>
+            </div>
+            <div class="contact-chip" onclick="toggleContact(this)">
+              <div class="contact-avatar selected" style="background: rgba(56,189,248,0.2);">🧑‍💻</div>
+              <div class="contact-name">Colleague</div>
+            </div>
+            <div class="contact-chip" onclick="toggleContact(this)">
+              <div class="contact-avatar" style="background: rgba(239,68,68,0.2);">🧑‍⚕️</div>
+              <div class="contact-name">Doctor</div>
+            </div>
+            <div class="contact-chip" onclick="toggleContact(this)">
+              <div class="contact-avatar" style="background: rgba(16,185,129,0.2);">➕</div>
+              <div class="contact-name">Add more</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="onboard-nav" style="padding: 0 28px 40px;">
+          <button class="btn-ghost" onclick="nextOnboard(1)">Back</button>
+          <button class="btn-primary" style="width: auto; padding: 14px 32px;" onclick="nextOnboard(3)">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: AI ready -->
+      <div class="onboard-step" id="onboard-3">
+        <div style="padding: 60px 28px 0; text-align: center;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--cyan); letter-spacing: 1px; text-transform: uppercase;">STEP 3 OF 3</div>
+          <div class="onboard-title" style="margin-top: 10px; text-align: center;">Your AI is<br><span style="color:var(--cyan)">ready to learn.</span></div>
+          <div class="onboard-sub" style="text-align: center;">Priofy starts with smart defaults and gets better every day. Target: 91%+ accuracy.</div>
+        </div>
+
+        <div class="onboard-illus" style="margin: 32px 0;">
+          <div style="padding: 24px; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(37,99,235,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px;">🤖</div>
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text);">Smart AI Filtering</div>
+                <div style="font-size: 12px; color: var(--text2);">Learns from every interaction</div>
+              </div>
+              <div style="margin-left: auto; width: 44px; height: 24px; background: var(--green); border-radius: 12px; position: relative; flex-shrink: 0;">
+                <div style="position:absolute; right: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16,185,129,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px;">🎯</div>
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text);">Focus Mode</div>
+                <div style="font-size: 12px; color: var(--text2);">Deep work sessions</div>
+              </div>
+              <div style="margin-left: auto; width: 44px; height: 24px; background: var(--green); border-radius: 12px; position: relative; flex-shrink: 0;">
+                <div style="position:absolute; right: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(168,85,247,0.2); display: flex; align-items: center; justify-content: center; font-size: 18px;">🏆</div>
+              <div>
+                <div style="font-size: 14px; font-weight: 700; color: var(--text);">Focus League</div>
+                <div style="font-size: 12px; color: var(--text2);">Compete with friends</div>
+              </div>
+              <div style="margin-left: auto; width: 44px; height: 24px; background: var(--green); border-radius: 12px; position: relative; flex-shrink: 0;">
+                <div style="position:absolute; right: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 0 28px 40px;">
+          <button class="btn-primary" onclick="goToMain()">Enter Priofy 🚀</button>
+          <button class="btn-ghost" style="width: 100%; margin-top: 8px;" onclick="nextOnboard(2)">← Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ HOME ============ -->
+    <div class="screen" id="screen-home">
+      <div class="home-header">
+        <div class="home-greeting">GOOD MORNING</div>
+        <div class="home-name">Dario 👋</div>
+        <div class="home-date">Sunday, 22 March — Week 12</div>
+      </div>
+
+      <!-- Hero stat -->
+      <div class="stat-hero">
+        <div class="stat-hero-label">Notifications blocked today</div>
+        <div class="stat-hero-num" id="home-blocked-count">47</div>
+        <div class="stat-hero-sub">You saved ~5.5 hrs of attention</div>
+        <div class="stat-hero-icon">🛡️</div>
+      </div>
+
+      <!-- Mini stats -->
+      <div class="stats-row">
+        <div class="stat-mini">
+          <div class="stat-mini-num green">8</div>
+          <div class="stat-mini-label">Got through</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-num cyan">94%</div>
+          <div class="stat-mini-label">AI accuracy</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-num" style="color: #A78BFA;">🥈 2nd</div>
+          <div class="stat-mini-label">League rank</div>
+        </div>
+      </div>
+
+      <!-- Focus score -->
+      <div class="focus-ring-card">
+        <div class="ring-wrap">
+          <svg class="ring-svg" width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7"/>
+            <circle cx="40" cy="40" r="34" fill="none" stroke="url(#ringGrad)" stroke-width="7"
+              stroke-dasharray="213.6" stroke-dashoffset="43" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2563EB"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="ring-text">
+            <div class="ring-pct">80%</div>
+            <div class="ring-lbl">focus</div>
+          </div>
+        </div>
+        <div>
+          <div class="ring-info-title">Strong focus day 💪</div>
+          <div class="ring-info-sub">You've had 2 deep work sessions. One more puts you in the top 10% this week.</div>
+        </div>
+      </div>
+
+      <!-- Focus CTA -->
+      <button class="focus-cta" onclick="goToFocusActive()">
+        <div>
+          <div class="focus-cta-text">▶ Start Focus Session</div>
+          <div class="focus-cta-sub">Block all distractions now</div>
+        </div>
+        <div class="focus-cta-arrow">⚡</div>
+      </button>
+
+      <!-- Recent allowed -->
+      <div class="section-header">
+        <div class="section-title">Made it through</div>
+        <div class="section-link" onclick="navTo('screen-inbox')">See all →</div>
+      </div>
+
+      <div class="notif-card" onclick="showToast('✓ Marked as important — AI updated')">
+        <div class="notif-app-icon" style="background: rgba(37,99,235,0.2);">💬</div>
+        <div class="notif-content">
+          <div class="notif-row1">
+            <span class="notif-app-name">WhatsApp</span>
+            <span class="notif-time">2m ago</span>
+          </div>
+          <div class="notif-sender">Rania</div>
+          <div class="notif-preview">Are you coming to the presentation prep?</div>
+          <span class="ai-score high">AI: 98% important</span>
+        </div>
+      </div>
+
+      <div class="notif-card" onclick="showToast('✓ Marked as important — AI updated')">
+        <div class="notif-app-icon" style="background: rgba(245,158,11,0.2);">📅</div>
+        <div class="notif-content">
+          <div class="notif-row1">
+            <span class="notif-app-name">Calendar</span>
+            <span class="notif-time">14m ago</span>
+          </div>
+          <div class="notif-sender">Startup Presentation</div>
+          <div class="notif-preview">Tomorrow at 10:00 — Room B2.04</div>
+          <span class="ai-score high">AI: 96% important</span>
+        </div>
+      </div>
+
+      <div class="notif-card" onclick="showToast('✓ Marked as important — AI updated')">
+        <div class="notif-app-icon" style="background: rgba(16,185,129,0.2);">📧</div>
+        <div class="notif-content">
+          <div class="notif-row1">
+            <span class="notif-app-name">Gmail</span>
+            <span class="notif-time">1h ago</span>
+          </div>
+          <div class="notif-sender">Noah</div>
+          <div class="notif-preview">Competitor analysis slides are done</div>
+          <span class="ai-score med">AI: 83% important</span>
+        </div>
+      </div>
+
+      <div style="height: 20px;"></div>
+    </div>
+
+    <!-- ============ INBOX ============ -->
+    <div class="screen" id="screen-inbox">
+      <div class="inbox-header">
+        <div class="inbox-title">Smart Inbox</div>
+        <div class="tab-bar" style="margin-bottom: 0;">
+          <div class="tab active" id="tab-allowed" onclick="switchTab('allowed')">Allowed (8)</div>
+          <div class="tab" id="tab-filtered" onclick="switchTab('filtered')">Filtered (47)</div>
+        </div>
+      </div>
+
+      <div class="inbox-body" id="inbox-body">
+        <!-- Allowed tab -->
+        <div id="inbox-allowed">
+          <div style="padding: 12px 24px 8px;">
+            <div style="font-size: 12px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Today</div>
+          </div>
+          <div class="notif-card pass-state" onclick="showToast('Already learned — this is a priority contact')">
+            <div class="notif-app-icon" style="background: rgba(37,99,235,0.2);">💬</div>
+            <div class="notif-content">
+              <div class="notif-row1"><span class="notif-app-name">WhatsApp · Rania</span><span class="notif-time">2m</span></div>
+              <div class="notif-sender">Are you coming to the presentation prep?</div>
+              <span class="ai-score high">Priority contact · 98% confidence</span>
+            </div>
+          </div>
+          <div class="notif-card pass-state" onclick="showToast('Calendar events are always allowed')">
+            <div class="notif-app-icon" style="background: rgba(245,158,11,0.2);">📅</div>
+            <div class="notif-content">
+              <div class="notif-row1"><span class="notif-app-name">Calendar</span><span class="notif-time">14m</span></div>
+              <div class="notif-sender">Startup Presentation — Tomorrow 10:00</div>
+              <span class="ai-score high">Time-sensitive event · 96% confidence</span>
+            </div>
+          </div>
+          <div class="notif-card pass-state" onclick="showToast('Email from priority contact allowed')">
+            <div class="notif-app-icon" style="background: rgba(16,185,129,0.2);">📧</div>
+            <div class="notif-content">
+              <div class="notif-row1"><span class="notif-app-name">Gmail · Noah</span><span class="notif-time">1h</span></div>
+              <div class="notif-sender">Competitor analysis slides are done</div>
+              <span class="ai-score high">Known sender · project keyword · 83%</span>
+            </div>
+          </div>
+          <div class="notif-card pass-state" onclick="showToast('Banking alerts always pass')">
+            <div class="notif-app-icon" style="background: rgba(239,68,68,0.2);">🏦</div>
+            <div class="notif-content">
+              <div class="notif-row1"><span class="notif-app-name">ING Bank</span><span class="notif-time">3h</span></div>
+              <div class="notif-sender">Payment received: €24.50</div>
+              <span class="ai-score high">Financial alert · 99% important</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filtered tab (hidden by default) -->
+        <div id="inbox-filtered" style="display: none;">
+          <div style="padding: 12px 24px 8px;">
+            <div style="font-size: 12px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Blocked today (47)</div>
+          </div>
+
+          <div class="blocked-item blocked-state" onclick="showToast('✓ Taught AI: this is important')">
+            <div class="blocked-icon" style="background: rgba(239,68,68,0.15);">🛒</div>
+            <div class="blocked-content">
+              <div class="blocked-app">Amazon</div>
+              <div class="blocked-msg">Flash sale! 40% off everything NOW</div>
+              <div class="blocked-reason">Reason: promotional keyword detected</div>
+            </div>
+            <span class="blocked-tag spam">Promo</span>
+          </div>
+
+          <div class="blocked-item blocked-state" onclick="showToast('✓ Taught AI: this is important')">
+            <div class="blocked-icon" style="background: rgba(239,68,68,0.15);">📱</div>
+            <div class="blocked-content">
+              <div class="blocked-app">Instagram</div>
+              <div class="blocked-msg">@user4892 liked your photo</div>
+              <div class="blocked-reason">Reason: social engagement, low priority</div>
+            </div>
+            <span class="blocked-tag social">Social</span>
+          </div>
+
+          <div class="blocked-item blocked-state" onclick="showToast('✓ Taught AI: this is important')">
+            <div class="blocked-icon" style="background: rgba(239,68,68,0.15);">🎮</div>
+            <div class="blocked-content">
+              <div class="blocked-app">Clash of Clans</div>
+              <div class="blocked-msg">Your village is under attack!</div>
+              <div class="blocked-reason">Reason: game notification, not work-related</div>
+            </div>
+            <span class="blocked-tag spam">Game</span>
+          </div>
+
+          <div class="blocked-item blocked-state" onclick="showToast('✓ Taught AI: this is important')">
+            <div class="blocked-icon" style="background: rgba(245,158,11,0.15);">📰</div>
+            <div class="blocked-content">
+              <div class="blocked-app">NOS News</div>
+              <div class="blocked-msg">Breaking: 5 new headlines in your area</div>
+              <div class="blocked-reason">Reason: news not in priority topics</div>
+            </div>
+            <span class="blocked-tag promo">News</span>
+          </div>
+
+          <div class="blocked-item blocked-state" onclick="showToast('✓ Taught AI: this is important')">
+            <div class="blocked-icon" style="background: rgba(239,68,68,0.15);">🛒</div>
+            <div class="blocked-content">
+              <div class="blocked-app">Zalando</div>
+              <div class="blocked-msg">Your wishlist item is back in stock</div>
+              <div class="blocked-reason">Reason: retail promotional, off-hours</div>
+            </div>
+            <span class="blocked-tag spam">Promo</span>
+          </div>
+
+          <div style="margin: 16px 24px; padding: 12px 16px; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.2); border-radius: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="showToast('AI model retrained with your feedback!')">
+            <span style="font-size: 20px;">🤖</span>
+            <div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--cyan);">Tap any blocked notification to teach the AI</div>
+              <div style="font-size: 12px; color: var(--text2);">Every correction improves your accuracy score</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ FOCUS SCREEN ============ -->
+    <div class="screen" id="screen-focus">
+      <div class="focus-top">
+        <div class="focus-screen-title">Focus Mode</div>
+        <div class="focus-status-badge">AI Active</div>
+      </div>
+
+      <div style="padding: 16px 24px 8px; font-size: 14px; color: var(--text2);">Choose your session type:</div>
+      <div class="session-picker">
+        <div class="session-chip selected" onclick="selectSession(this)">
+          <span>🎓</span> Deep Study
+        </div>
+        <div class="session-chip" onclick="selectSession(this)">
+          <span>💼</span> Work Sprint
+        </div>
+        <div class="session-chip" onclick="selectSession(this)">
+          <span>🧘</span> Mindful
+        </div>
+        <div class="session-chip" onclick="selectSession(this)">
+          <span>🎨</span> Creative
+        </div>
+        <div class="session-chip" onclick="selectSession(this)">
+          <span>⚡</span> Custom
+        </div>
+      </div>
+
+      <div class="focus-timer-wrap">
+        <div class="focus-circle" onclick="goToFocusActive()">
+          <svg class="focus-circle-svg" width="220" height="220" viewBox="0 0 220 220">
+            <circle cx="110" cy="110" r="98" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>
+            <circle cx="110" cy="110" r="98" fill="none" stroke="url(#focusGrad)" stroke-width="12"
+              stroke-dasharray="616" stroke-dashoffset="154" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="focusGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#10B981"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="focus-circle-content">
+            <div style="font-size: 13px; color: var(--text2); margin-bottom: 4px;">Duration</div>
+            <div class="focus-time">25:00</div>
+            <div class="focus-time-label">minutes</div>
+            <div style="font-size: 11px; color: var(--cyan); margin-top: 6px;">Tap to start →</div>
+          </div>
+        </div>
+        <div class="focus-session-name">📚 Deep Study Session</div>
+        <div class="focus-session-sub">Only priority contacts can reach you</div>
+      </div>
+
+      <div class="focus-stats-row">
+        <div class="focus-stat">
+          <div class="focus-stat-num">3</div>
+          <div class="focus-stat-label">Sessions today</div>
+        </div>
+        <div class="focus-stat">
+          <div class="focus-stat-num red">47</div>
+          <div class="focus-stat-label">Blocked today</div>
+        </div>
+        <div class="focus-stat">
+          <div class="focus-stat-num green">1h 15m</div>
+          <div class="focus-stat-label">Deep work</div>
+        </div>
+      </div>
+
+      <div class="focus-important">
+        <div class="focus-important-icon">💚</div>
+        <div class="focus-important-text">Emergency messages from Rania, Mom & 3 others will always get through.</div>
+      </div>
+    </div>
+
+    <!-- ============ FOCUS ACTIVE ============ -->
+    <div class="screen" id="screen-focus-active">
+      <div class="focus-pulse-ring"></div>
+      <div class="focus-pulse-ring"></div>
+      <div class="focus-pulse-ring"></div>
+
+      <div class="focus-active-header">
+        <div class="focus-active-title">📚 Deep Study</div>
+        <div class="focus-active-x" onclick="navTo('screen-focus')">✕</div>
+      </div>
+
+      <div class="focus-big-timer" id="active-timer">24:37</div>
+      <div class="focus-big-label">remaining</div>
+
+      <div style="text-align:center; margin-bottom: 40px;">
+        <div class="focus-blocked-big" id="active-blocked">12</div>
+        <div class="focus-blocked-label">notifications blocked so far</div>
+      </div>
+
+      <div style="display:flex; gap: 12px; width: 100%; max-width: 300px;">
+        <button class="focus-pause-btn" onclick="showToast('Session paused')">⏸ Pause</button>
+        <button class="focus-end-btn" onclick="endFocus()">✕ End Session</button>
+      </div>
+
+      <div style="margin-top: 24px; text-align: center; font-size: 13px; color: var(--green); opacity: 0.7;">
+        🔒 Priofy is protecting your focus
+      </div>
+    </div>
+
+    <!-- ============ LEAGUE ============ -->
+    <div class="screen" id="screen-league">
+      <div class="league-header">
+        <div class="league-title">Focus League</div>
+        <div class="league-sub">Weekly challenge • Ends in 4 days 12h</div>
+      </div>
+
+      <!-- Hero: your score -->
+      <div class="league-hero">
+        <div class="league-hero-title">Your notifications blocked this week</div>
+        <div class="league-hero-num">312</div>
+        <div class="league-hero-sub">↑ 47 today • 🔥 5 day streak</div>
+      </div>
+
+      <!-- Your rank -->
+      <div class="league-your-rank">
+        <div class="league-rank-left">
+          <div class="league-rank-medal">🥈</div>
+          <div>
+            <div class="league-rank-title">You're ranked 2nd</div>
+            <div class="league-rank-sub">31 more to take 1st place from Luka</div>
+          </div>
+        </div>
+        <div class="league-rank-pts">312</div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="section-header" style="padding-bottom: 8px;">
+        <div class="section-title">Leaderboard</div>
+        <div style="font-size: 12px; color: var(--text2);">This week</div>
+      </div>
+
+      <div class="leaderboard-item">
+        <div class="lb-rank gold">1</div>
+        <div class="lb-avatar" style="background: rgba(245,158,11,0.2);">🧑</div>
+        <div class="lb-info">
+          <div class="lb-name">Luka</div>
+          <div class="lb-detail">3 sessions today</div>
+        </div>
+        <div class="lb-score-wrap">
+          <div class="lb-score">343</div>
+          <div class="lb-score-label">blocked</div>
+          <div class="lb-bar-wrap"><div class="lb-bar" style="width:100%;"></div></div>
+        </div>
+      </div>
+
+      <div class="leaderboard-item you">
+        <div class="lb-rank silver">2</div>
+        <div class="lb-avatar" style="background: rgba(37,99,235,0.2);">😎</div>
+        <div class="lb-info">
+          <div class="lb-name">You (Dario)</div>
+          <div class="lb-detail">🔥 5-day streak</div>
+        </div>
+        <div class="lb-score-wrap">
+          <div class="lb-score" style="color: #A78BFA;">312</div>
+          <div class="lb-score-label">blocked</div>
+          <div class="lb-bar-wrap"><div class="lb-bar" style="width:91%;"></div></div>
+        </div>
+      </div>
+
+      <div class="leaderboard-item">
+        <div class="lb-rank bronze">3</div>
+        <div class="lb-avatar" style="background: rgba(16,185,129,0.2);">👩</div>
+        <div class="lb-info">
+          <div class="lb-name">Rania</div>
+          <div class="lb-detail">2 sessions today</div>
+        </div>
+        <div class="lb-score-wrap">
+          <div class="lb-score">287</div>
+          <div class="lb-score-label">blocked</div>
+          <div class="lb-bar-wrap"><div class="lb-bar" style="width:84%;"></div></div>
+        </div>
+      </div>
+
+      <div class="leaderboard-item">
+        <div class="lb-rank">4</div>
+        <div class="lb-avatar" style="background: rgba(168,85,247,0.2);">🧑‍💻</div>
+        <div class="lb-info">
+          <div class="lb-name">Noah</div>
+          <div class="lb-detail">1 session today</div>
+        </div>
+        <div class="lb-score-wrap">
+          <div class="lb-score">241</div>
+          <div class="lb-score-label">blocked</div>
+          <div class="lb-bar-wrap"><div class="lb-bar" style="width:70%;"></div></div>
+        </div>
+      </div>
+
+      <div class="leaderboard-item">
+        <div class="lb-rank">5</div>
+        <div class="lb-avatar" style="background: rgba(56,189,248,0.2);">🧑</div>
+        <div class="lb-info">
+          <div class="lb-name">Sophie</div>
+          <div class="lb-detail">Just joined today</div>
+        </div>
+        <div class="lb-score-wrap">
+          <div class="lb-score">189</div>
+          <div class="lb-score-label">blocked</div>
+          <div class="lb-bar-wrap"><div class="lb-bar" style="width:55%;"></div></div>
+        </div>
+      </div>
+
+      <!-- Invite banner -->
+      <div style="margin: 16px 24px; padding: 14px 16px; background: rgba(79,70,229,0.15); border: 1px solid rgba(79,70,229,0.3); border-radius: 14px; cursor: pointer;" onclick="showToast('📨 Invite link copied!')">
+        <div style="font-size: 14px; font-weight: 700; color: #A78BFA;">+ Invite friends to your league</div>
+        <div style="font-size: 12px; color: var(--text2); margin-top: 3px;">Leagues with 10+ people win 1 month Premium free 🎁</div>
+      </div>
+
+      <!-- Badges -->
+      <div class="section-header" style="padding-bottom: 8px;">
+        <div class="section-title">Your Badges</div>
+      </div>
+
+      <div class="league-badge">
+        <div class="badge-card earned">
+          <div class="earned-star">⭐</div>
+          <div class="badge-icon">🔥</div>
+          <div class="badge-title">Streak Master</div>
+          <div class="badge-sub">5-day streak</div>
+        </div>
+        <div class="badge-card earned">
+          <div class="earned-star">⭐</div>
+          <div class="badge-icon">🛡️</div>
+          <div class="badge-title">100 Blocked</div>
+          <div class="badge-sub">Single day</div>
+        </div>
+        <div class="badge-card locked">
+          <div class="badge-icon">🏆</div>
+          <div class="badge-title">#1 Rank</div>
+          <div class="badge-sub">Top of league</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ AI SETTINGS ============ -->
+    <div class="screen" id="screen-ai">
+      <div class="ai-header">
+        <div class="ai-header-title">Your AI Profile</div>
+        <div class="ai-header-sub">See how Priofy makes decisions for you</div>
+      </div>
+
+      <!-- Accuracy card -->
+      <div class="ai-accuracy-card">
+        <div class="ai-gauge">
+          <svg class="ai-gauge-svg" width="90" height="90" viewBox="0 0 90 90">
+            <circle cx="45" cy="45" r="38" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
+            <circle cx="45" cy="45" r="38" fill="none" stroke="url(#aiGrad)" stroke-width="8"
+              stroke-dasharray="238.8" stroke-dashoffset="26" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#10B981"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="ai-gauge-text">
+            <div class="ai-gauge-pct">94%</div>
+            <div class="ai-gauge-lbl">accurate</div>
+          </div>
+        </div>
+        <div>
+          <div class="ai-gauge-info-title">AI is performing well</div>
+          <div class="ai-gauge-info-sub">Based on 312 interactions. Target is 91%+. Your corrections help the model improve every day.</div>
+          <div class="ai-progress-bar">
+            <div class="ai-progress-fill" style="width: 94%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority contacts -->
+      <div class="ai-section-title">Priority Contacts</div>
+
+      <div class="priority-contact">
+        <div class="priority-avatar" style="background: rgba(239,68,68,0.15);">👩</div>
+        <div class="priority-info">
+          <div class="priority-name">Mom</div>
+          <div class="priority-detail">Always passes through · All apps</div>
+        </div>
+        <div class="priority-level">
+          <div class="priority-dot filled"></div>
+          <div class="priority-dot filled"></div>
+          <div class="priority-dot filled"></div>
+        </div>
+      </div>
+
+      <div class="priority-contact">
+        <div class="priority-avatar" style="background: rgba(16,185,129,0.15);">💑</div>
+        <div class="priority-info">
+          <div class="priority-name">Partner</div>
+          <div class="priority-detail">Always passes through · All apps</div>
+        </div>
+        <div class="priority-level">
+          <div class="priority-dot filled"></div>
+          <div class="priority-dot filled"></div>
+          <div class="priority-dot filled"></div>
+        </div>
+      </div>
+
+      <div class="priority-contact">
+        <div class="priority-avatar" style="background: rgba(56,189,248,0.15);">🧑‍💻</div>
+        <div class="priority-info">
+          <div class="priority-name">Rania & Noah</div>
+          <div class="priority-detail">Priority · Project contacts</div>
+        </div>
+        <div class="priority-level">
+          <div class="priority-dot filled"></div>
+          <div class="priority-dot filled"></div>
+          <div class="priority-dot"></div>
+        </div>
+      </div>
+
+      <!-- Keywords -->
+      <div class="ai-section-title" style="margin-top: 8px;">Priority Keywords</div>
+      <div class="keywords-wrap">
+        <span class="keyword-chip">📋 deadline</span>
+        <span class="keyword-chip">🚨 urgent</span>
+        <span class="keyword-chip">💊 medication</span>
+        <span class="keyword-chip">✈️ flight</span>
+        <span class="keyword-chip">📦 delivery</span>
+        <span class="add-chip" onclick="showToast('✓ Keyword added')">+ Add keyword</span>
+      </div>
+
+      <!-- AI learn card -->
+      <div class="ai-learn-card">
+        <div class="ai-learn-icon">🧠</div>
+        <div>
+          <div class="ai-learn-title">How Priofy learns from you</div>
+          <div class="ai-learn-sub">Every time you retrieve a filtered notification or dismiss an allowed one, the AI updates. Your data never leaves your device.</div>
+        </div>
+      </div>
+
+      <!-- Privacy note -->
+      <div style="margin: 16px 24px 24px; padding: 12px 16px; background: rgba(255,255,255,0.04); border-radius: 12px; border: 1px solid var(--border);">
+        <div style="font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px;">🔒 100% On-Device AI</div>
+        <div style="font-size: 12px; color: var(--text2); line-height: 1.5;">Your notification content is processed locally. Priofy never reads or stores your messages on servers. Full GDPR compliance.</div>
+      </div>
+    </div>
+
+    <!-- ============ BOTTOM NAV ============ -->
+    <div class="bottom-nav" id="bottom-nav">
+      <div class="nav-item active" id="nav-home" onclick="navTo('screen-home')">
+        <div class="nav-icon">🏠</div>
+        <div class="nav-label">Home</div>
+        <div class="nav-dot"></div>
+      </div>
+      <div class="nav-item" id="nav-inbox" onclick="navTo('screen-inbox')" style="position:relative;">
+        <div class="nav-icon">📬</div>
+        <div class="nav-badge">47</div>
+        <div class="nav-label">Inbox</div>
+        <div class="nav-dot"></div>
+      </div>
+      <div class="nav-item" id="nav-focus" onclick="navTo('screen-focus')">
+        <div class="nav-icon">🎯</div>
+        <div class="nav-label">Focus</div>
+        <div class="nav-dot"></div>
+      </div>
+      <div class="nav-item" id="nav-league" onclick="navTo('screen-league')">
+        <div class="nav-icon">🏆</div>
+        <div class="nav-label">League</div>
+        <div class="nav-dot"></div>
+      </div>
+      <div class="nav-item" id="nav-ai" onclick="navTo('screen-ai')">
+        <div class="nav-icon">🤖</div>
+        <div class="nav-label">AI Profile</div>
+        <div class="nav-dot"></div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+  </div><!-- end screen-container -->
+</div><!-- end phone-wrap -->
+
+<script>
+// ---- State ----
+let currentScreen = 'screen-splash';
+let activeTab = 'allowed';
+let focusTimer = null;
+let focusSeconds = 24 * 60 + 37;
+let blockedCount = 12;
+
+// ---- Navigation ----
+function goTo(screenId) {
+  const current = document.getElementById(currentScreen);
+  const next = document.getElementById(screenId);
+  if (current) current.classList.remove('active');
+  next.classList.add('active');
+  next.classList.add('screen-enter');
+  setTimeout(() => next.classList.remove('screen-enter'), 400);
+  currentScreen = screenId;
+
+  // Show/hide bottom nav
+  const noNav = ['screen-splash', 'screen-onboard', 'screen-focus-active'];
+  document.getElementById('bottom-nav').style.display = noNav.includes(screenId) ? 'none' : 'flex';
+
+  // Update status bar
+  document.getElementById('status-bar').style.opacity = screenId === 'screen-splash' ? '0.7' : '1';
+}
+
+function navTo(screenId) {
+  goTo(screenId);
+  // Update nav active state
+  const navMap = {
+    'screen-home': 'nav-home',
+    'screen-inbox': 'nav-inbox',
+    'screen-focus': 'nav-focus',
+    'screen-league': 'nav-league',
+    'screen-ai': 'nav-ai'
+  };
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
+}
+
+function goToMain() {
+  goTo('screen-home');
+  document.getElementById('bottom-nav').style.display = 'flex';
+  document.getElementById('nav-home').classList.add('active');
+}
+
+function nextOnboard(step) {
+  document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('onboard-' + step).classList.add('active');
+  // Update dots
+  const dots = document.querySelectorAll('.splash-dot');
+}
+
+// ---- Focus Active ----
+function goToFocusActive() {
+  goTo('screen-focus-active');
+  startFocusTimer();
+}
+
+function startFocusTimer() {
+  clearInterval(focusTimer);
+  focusTimer = setInterval(() => {
+    if (focusSeconds > 0) {
+      focusSeconds--;
+      const m = Math.floor(focusSeconds / 60);
+      const s = focusSeconds % 60;
+      document.getElementById('active-timer').textContent =
+        String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+    // Randomly increment blocked count
+    if (Math.random() < 0.05) {
+      blockedCount++;
+      document.getElementById('active-blocked').textContent = blockedCount;
+    }
+  }, 1000);
+}
+
+function endFocus() {
+  clearInterval(focusTimer);
+  focusSeconds = 24 * 60 + 37;
+  blockedCount = 12;
+  showToast('✅ Session complete! You blocked ' + blockedCount + ' notifications');
+  setTimeout(() => navTo('screen-home'), 800);
+}
+
+// ---- Tabs ----
+function switchTab(tab) {
+  activeTab = tab;
+  document.getElementById('tab-allowed').classList.toggle('active', tab === 'allowed');
+  document.getElementById('tab-filtered').classList.toggle('active', tab === 'filtered');
+  document.getElementById('inbox-allowed').style.display = tab === 'allowed' ? 'block' : 'none';
+  document.getElementById('inbox-filtered').style.display = tab === 'filtered' ? 'block' : 'none';
+}
+
+// ---- Contacts ----
+function toggleContact(chip) {
+  const avatar = chip.querySelector('.contact-avatar');
+  avatar.classList.toggle('selected');
+}
+
+// ---- Session picker ----
+function selectSession(chip) {
+  document.querySelectorAll('.session-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+}
+
+// ---- Toast ----
+let toastTimeout;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ---- Status time ----
+function updateTime() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = String(now.getMinutes()).padStart(2, '0');
+  document.getElementById('status-time').textContent = h + ':' + m;
+}
+updateTime();
+setInterval(updateTime, 10000);
+
+// ---- Auto-animate blocked counter on home ----
+let homeBlocked = 47;
+setInterval(() => {
+  if (currentScreen === 'screen-home' && Math.random() < 0.03) {
+    homeBlocked++;
+    const el = document.getElementById('home-blocked-count');
+    if (el) el.textContent = homeBlocked;
+  }
+}, 2000);
+
+// Init: hide bottom nav on splash
+document.getElementById('bottom-nav').style.display = 'none';
+</script>
+<script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/app/sw.js").then(()=>console.log("Priofy SW registered")).catch(e=>console.log("SW error",e))}</script>
+<div style="position:fixed;top:12px;left:12px;z-index:9999;display:none" id="back-btn"><a href="/" style="background:rgba(13,31,60,0.9);color:#94A3B8;font-size:12px;padding:6px 12px;border-radius:8px;text-decoration:none;border:1px solid rgba(148,163,184,0.2);font-family:system-ui">← priofy.app</a></div>
+</body>
+</html>
